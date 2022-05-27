@@ -36,8 +36,12 @@ Jika diperhatikan, tombol `Cetak` hilang jika sudah di print/didownload dikarena
 
 Jika dilihat dari URL yang ada di address bar, website dibuat dengan menggunakan php. Hal ini menandakan terdapat sebuah backend dan sebuah database yang menyimpan nama dan identitas siswa beserta jadwal juga token.
 
-```http
+```
 https://kartuujian.sman12-bekasi.sch.id/cetakskl.php?nisn=<U-PIN>
 ```
 
 Data akan ditampilkan sesuai apa yang dimasukan sebagai `U-PIN` oleh pengguna. Artinya website ini memiliki template yang sama dan dapat digunakan untuk [_scraping_](https://www.niagahoster.co.id/blog/web-scraping/) dan dapat diambil datanya sebagai data yang bisa digunakan sebagai kartu digital.
+
+## Melakukan Ekstraksi Data
+
+Cara yang paling mudah adalah menggunakan teknik [_scraping_](https://www.niagahoster.co.id/blog/web-scraping/) dari halaman website yang ada.
