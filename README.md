@@ -28,7 +28,7 @@ Saya melakukan _inspect element_ ke tombol `Cetak` yang ada, dan ternyata yang d
 
 ![Tombol cetak](./assets/halaman-kartu.png)
 
-Jika diperhatikan, tombol `Cetak` hilang jika sudah di print/didownload dikarenakan ada class `.no-print` yang cssnya tidak menampilkan pada saat `media screen` yang artinya dalam mode preview.
+Jika diperhatikan, tombol `Cetak` hilang jika sudah di print/didownload dikarenakan ada class `.no-print` yang cssnya tidak menampilkan pada saat `media print` yang artinya dalam mode printing.
 
 ![Setelah siswa mengisi U-PIN](./assets/css-media-print-tombol-hilang.png)
 
@@ -44,4 +44,221 @@ Data akan ditampilkan sesuai apa yang dimasukan sebagai `U-PIN` oleh pengguna. A
 
 ## Melakukan Ekstraksi Data
 
-Cara yang paling mudah adalah menggunakan teknik [_scraping_](https://www.niagahoster.co.id/blog/web-scraping/) dari halaman website yang ada.
+Cara yang paling mudah adalah menggunakan teknik [_scraping_](https://www.niagahoster.co.id/blog/web-scraping/) dari halaman website yang ada. Setelah menyelidiki dan melakukan percobaan, ini teknik yang bisa dilakukan untuk mengambil otomatis yang nantinya bisa di otomasi menggunakan puppeteer.
+
+### Mendapatkan Hari, Mata Pelajaran, Token, dan Waktu
+
+Yang pertama kali saya lakukan adalah mengambil elemen yang merupakan nomor dari kumpulan hari yang ada. Hal ini diambil karena elemen ini memiliki karakteristik khusus yaitu mengisi 4 baris sekaligus (4 rowspan).
+
+![Elemen nomor table data (td)](./assets/jadwalRef-element.png)
+
+Jadi, elemen ini bisa ditampung ke dalam variabel `jadwalRef`.
+
+```js
+const jadwalRef = [...document.querySelectorAll('td[rowspan="4"]')];
+```
+
+Setelah menampung variabel yang ada, saya melakukan _mapping_ untuk mendapatkan mata pelajaran, token, dan waktu yang sesungguhnya. Untuk mendapatkannya, hal yang paling mungkin adalah melakukan `while loop` yang dapat dihentikan jika sudah mencapai batas tertentu.
+
+Hal yang dilakukan selanjutnya adalah mengecek parent `parentElement` dan mengecek elemen sesudahnya atau `nextElementSibling` apakah tidak ada elemen selanjutnya itu sebuah `'td[rowspan="4"]'`, jika pernyataan itu valid maka di hentikanlah `while loop` dan keluar melanjutkan proses eksekusi kode.
+
+Jika pernyataan itu tidak valid maka kita bisa melakukan pengecekan apakah mata pelajaran bukan merupakan `-`. Dengan aman, kita bisa mengambil mata pelajaran, token dan waktu ulangan.
+
+Untuk mendapatkan informasi tentang tanggal dan hari, kita cukup manfaatkan saja parent element yang terdapat didalam elemen `td`.
+
+Kira-kira kode akan terlihat seperti ini. Penjelasan tambahan tertera pada kode dibawah.
+
+```js
+const jadwalRef = [...document.querySelectorAll('td[rowspan="4"]')];
+
+const jadwal = jadwalRef.map((j) => {
+  let data = [];
+  let currentElement;
+
+  const parent = j.parentElement;
+
+  while (true) {
+    // Mengambil element selanjutnya
+    const next =
+      data.length < 1
+        ? parent.nextElementSibling
+        : currentElement.nextElementSibling;
+
+    // Apakah elemen selanjutnya tidak ada
+    // atau elemen selanjutnya merupakan nomor tabel
+    if (!next || next.querySelector('td[rowspan="4"]')) break;
+
+    // Apakah elemen selanjutnya tidak memiliki string "-"
+    if (!next.querySelector("td").innerText.includes("-")) {
+      const mapelElement = next.querySelector("td");
+      const tokenElement = next.querySelector("td:nth-child(2)");
+      const waktuElement = next.querySelector("td:nth-child(3)");
+
+      // Mereplace string 1-9<spasi> dengan ''
+      const pelajaran = mapelElement.innerText.replace(/[0-9].\s/, "");
+
+      const tokenStr = tokenElement.innerText;
+
+      // Terdapat token yang memiliki beragam opsi.
+      // Supaya tetap konsisten, tipe data akan tetap
+      // berupa array of string
+      const token = tokenStr.includes("/") ? tokenStr.split(" / ") : [tokenStr];
+
+      // Mereplace – (en dash) dengan - (hypen)
+      // Karena menyebabkan bug ketika diubah
+      // menjadi string json yang disisipkan
+      // ke dalam file
+      const waktu = waktuElement.innerText.replace("–", "-");
+
+      data.push({
+        pelajaran,
+        token,
+        waktu,
+      });
+    }
+
+    currentElement = next;
+  }
+
+  const hariElement = parent.querySelector("th");
+
+  // Memisahkan antara hari dan tanggal
+  const [hari, tanggal] = hariElement.innerText.split(", ");
+
+  return {
+    hari,
+    tanggal,
+    mapel: data,
+  };
+});
+```
+
+### Mendapatkan Identitas Siswa/i
+
+![Identitas siswa/i yang bisa diambil](./assets/identitas-siswa.png)
+
+Bagian ini merupakan tabel yang memiliki 800px dan tabel kedua yang ada di jenisnya (`'table[width="800"]:nth-of-type(2)'`). Semua text yang ada dicetak tebal menggunakan tag `b`, jadi bisa di simpulkan bahwa elemen bisa diambil menggunakan `querySelectorAll` dengan parameter `'table[width="800"]:nth-of-type(2) td b'`.
+
+Jika kita gabungkan dengan kode yang sebelumnya, hasilnya akan jadi seperti ini. Penjelasan lebih sudah tercantum dalam kode dibawah ini.
+
+```js
+const jadwalRef = [...document.querySelectorAll('td[rowspan="4"]')];
+const [nama, kelas, nomorPeserta, npsn, username, password] = [
+  ...document.querySelectorAll('table[width="800"]:nth-of-type(2) td b'),
+]
+  // Di filter apakah merupakan 6 elemen yang dimaksud
+  .filter((el) => el.parentElement.getAttribute("colspan") === "2")
+  // Akan terdapat spasi, oleh karenya di trim
+  // untuk menghilangkan spasi
+  .map((el) => el.innerText.trim());
+
+const jadwal = jadwalRef.map((j) => {
+  let data = [];
+  let currentElement;
+
+  const parent = j.parentElement;
+
+  while (true) {
+    // Mengambil element selanjutnya
+    const next =
+      data.length < 1
+        ? parent.nextElementSibling
+        : currentElement.nextElementSibling;
+
+    // Apakah elemen selanjutnya tidak ada
+    // atau elemen selanjutnya merupakan nomor tabel
+    if (!next || next.querySelector('td[rowspan="4"]')) break;
+
+    // Apakah elemen selanjutnya tidak memiliki string "-"
+    if (!next.querySelector("td").innerText.includes("-")) {
+      const mapelElement = next.querySelector("td");
+      const tokenElement = next.querySelector("td:nth-child(2)");
+      const waktuElement = next.querySelector("td:nth-child(3)");
+
+      // Mereplace string 1-9<spasi> dengan ''
+      const pelajaran = mapelElement.innerText.replace(/[0-9].\s/, "");
+
+      const tokenStr = tokenElement.innerText;
+
+      // Terdapat token yang memiliki beragam opsi.
+      // Supaya tetap konsisten, tipe data akan tetap
+      // berupa array of string
+      const token = tokenStr.includes("/") ? tokenStr.split(" / ") : [tokenStr];
+
+      // Mereplace – (en dash) dengan - (hypen)
+      // Karena menyebabkan bug ketika diubah
+      // menjadi string json yang disisipkan
+      // ke dalam file
+      const waktu = waktuElement.innerText.replace("–", "-");
+
+      data.push({
+        pelajaran,
+        token,
+        waktu,
+      });
+    }
+
+    currentElement = next;
+  }
+
+  const hariElement = parent.querySelector("th");
+
+  // Memisahkan antara hari dan tanggal
+  const [hari, tanggal] = hariElement.innerText.split(", ");
+
+  return {
+    hari,
+    tanggal,
+    mapel: data,
+  };
+});
+
+// Ini adalah data yang dapat digunakan
+const finalData = {
+  user: {
+    nama,
+    kelas,
+    nomor_peserta: nomorPeserta,
+    npsn,
+    username,
+    password,
+  },
+  jadwal,
+};
+```
+
+### Typescript Declaration
+
+Kode diatas sudah menunjukkan cara bagaimana dokumen bisa dibuat, tapi supaya dapat memberikan gambaran struktur data yang lengkap, berikut ini merupakan file typescript declaration hasil scraping diatas.
+
+```ts
+type UserType = {
+  nama: string;
+  kelas: string;
+  nomor_peserta: string;
+  npsn: string;
+  username: string;
+  password: string;
+};
+
+type MapelType = {
+  pelajaran: string;
+  token: string[];
+  waktu: string;
+};
+
+type jadwalType = {
+  hari: string;
+  tanggal: string;
+  mapel: MapelType[];
+};
+
+export type IDigitalCard = {
+  user: UserType;
+  jadwal: jadwalType;
+};
+```
+
+### Menjalankan Scraper
+
+Terdapat sebuah contoh scraper yang menjadi kode dasar yang mungkin kedepannya dapat digunakan.
