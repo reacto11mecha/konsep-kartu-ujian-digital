@@ -1,0 +1,13 @@
+{
+  "name": "konsep-kartu-ujian-digital",
+  "version": "1.0.0",
+  "description": "Penjelasan konsep kartu ujian digital yang bisa dibaca oleh manusia dan komputer (khususnya telepon genggam)",
+  "main": "index.js",
+  "scripts": {
+    "scrape": "node 001-ekstraksi-data/scraper.js"
+  },
+  "author": "Ezra Khairan Permana",
+  "dependencies": {
+    "puppeteer": "^14.1.1"
+  }
+}
