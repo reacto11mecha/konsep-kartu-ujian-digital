@@ -262,3 +262,40 @@ export type IDigitalCard = {
 ### Menjalankan Scraper
 
 Terdapat sebuah contoh scraper yang menjadi kode dasar yang mungkin kedepannya dapat digunakan.
+
+#### Cloning Dari Github
+
+Jalankan perintah ini Command Line.
+
+```sh
+# HTTPS
+git clone https://github.com/reacto11mecha/konsep-kartu-ujian-digital.git
+
+# SSH
+git clone git@github.com:reacto11mecha/konsep-kartu-ujian-digital.git
+```
+
+#### Menginstall package
+
+Anda ke root directory project dan menginstall package yang diperlukan.
+
+```sh
+npm install
+
+# atau menggunakan pnpm
+pnpm install
+```
+
+#### Scraping Web dengan U-PIN
+
+Scraper dapat dijalankan dengan perintah berikut.
+
+```sh
+npm run scrape <U-PIN>
+
+# atau
+
+pnpm scrape <U-PIN>
+```
+
+Jika berhasil diambil, akan terbentuk folder result didalam folder `result` yang ada di [001-ekstraksi-data](./001-ekstraksi-data/). Akan ada 3 file yang terbentuk, file pdf asli, yang sudah terdapat data kartu, dan data mentahan kartu.
