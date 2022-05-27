@@ -299,3 +299,47 @@ pnpm scrape <U-PIN>
 ```
 
 Jika berhasil diambil, akan terbentuk folder result didalam folder `result` yang ada di [001-ekstraksi-data](./001-ekstraksi-data/). Akan ada 3 file yang terbentuk, file pdf asli, yang sudah terdapat data kartu, dan data mentahan kartu.
+
+## Membaca Informasi Yang Tedapat Dalam Kartu
+
+Singkatnya dengan snippet dibawah ini, kita dapat membaca mengetahui informasi yang tersembunyi dalam file.
+
+```js
+const fs = require("fs");
+
+const pdfBuffer = fs.readFileSync("./to_pdf_file_path.pdf");
+
+const asciiString = fileBuffer.toString("ascii");
+const str = asciiString.substring(asciiString.indexOf("%%EOF") + 5);
+
+// Isinya ada disini
+const message = str.trim();
+```
+
+Jalankan perintah dibawah ini untuk membaca file yang sudah ada di folder result folder ekstraksi data. Di folder [02-membaca-kartu](./002-membaca-kartu/) juga terdapat contoh pembacaan informasi rahasia dengan menggunakan bahasa JavaScript.
+
+```sh
+npm run read
+
+# atau
+
+pnpm read
+```
+
+## Menambahkan Fungsi Signature dan Verifikasi GnuPG (Opsional)
+
+Jika ingin benar-benar memastikan kartu itu dibuat oleh pihak sekolah, kartu harus memiliki tanda tangan elektronik menggunakan GnuPG (Gnu Privacy Guard) sebagai software penjamin dan bisa diverifikasi dalam aplikasi.
+
+Untuk menandatangani file
+
+```sh
+gpg --output <file_asli+extensi>.sig --detach-sig <file_asli+extensi>
+```
+
+Untuk memverifikasi keaslian file
+
+```sh
+gpg --verify <file_signaturenya> <file_aslinya>
+```
+
+Cara diatas merupakan cara manual, terdapat banyak wraper yang sudah ada untuk menangani gpg di banyak bahasa pemrograman.
