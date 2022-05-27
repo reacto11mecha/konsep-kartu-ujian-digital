@@ -342,4 +342,4 @@ Untuk memverifikasi keaslian file
 gpg --verify <file_signaturenya> <file_aslinya>
 ```
 
-Cara diatas merupakan cara manual, terdapat banyak wraper yang sudah ada untuk menangani gpg di banyak bahasa pemrograman.
+Cara diatas merupakan cara manual, terdapat banyak wraper yang sudah ada untuk menangani gpg di banyak bahasa pemrograman. Seperti [Bounty Castle](https://www.bouncycastle.org/) dalam bahasa pemrograman Java dan [OpenPGP.js](https://github.com/openpgpjs/openpgpjs) di bahasa pemrograman JavaScript.
