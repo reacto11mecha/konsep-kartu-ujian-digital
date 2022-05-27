@@ -11,6 +11,9 @@
  *
  * Setelah menjalankan, silahkan cek folder result, akan ada file hasil
  * steganography, file asli, dan file json.
+ *
+ * Untuk inti penjelasan inti terdapat di file README root,
+ * silahkan baca jika ingin mendapatkan penjelasan lebih.
  */
 
 const fs = require("fs");
