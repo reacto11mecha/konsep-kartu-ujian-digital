@@ -6,17 +6,37 @@ Sebelumnya, saya berterima kasih kepada pihak sekolah yang sudah bergerak dengan
 
 Dalam kata lain, saya memberikan saran supaya kita lebih _paperless_ dalam melaksanakan ujian.
 
+## TL;DR
+
+_Too Long; Didn't Read_. Jika tidak ingin membaca terlalu panjang, ini adalah ringkasan penjelasan dengan menggunakan diagram.
+
+Pertama-tama puppeteer mengunjungi halaman kartu.
+
+![Diagram puppeteer mengunjungi halaman kartu](./assets/image/diagram-Puppeteer%20Mengunjungi%20Web.drawio.png)
+
+Kemudian puppeteer melakukan web scraping, mengambil data yang diperlukan. Mekanisme yang lebih jelas sudah diterangkan di bagian [Melakukan Ekstraksi Data](#melakukan-ekstraksi-data).
+
+![Diagram puppeteer melakukan web scraping](./assets/image/diagram-Puppeteer%20Melakukan%20Scraping.drawio.png)
+
+Masih didalam fungsi puppeteer, scraping yang dilakukan oleh puppeteer akan menghasilkan file pdf asli, file pdf yang sudah disusupi data json, dan data mentahan. Teknik penyusupan data json ini menggunakan [`Buffer.concat`](https://nodejs.org/api/buffer.html#static-method-bufferconcatlist-totallength) bawaan dari NodeJS.
+
+![Diagram puppeteer melakukan web scraping](./assets/image/diagram-Concat%20PDF%20dengan%20JSON.drawio.png)
+
+Secara teknis, aplikasi android bisa membaca file dan membaca buffer. Buffer yang sudah dibaca akan di ubah menjadi `ascii` dan dipisahkan dari `EOF` (End Of File) PDF dan mendapatkan string JSON. String JSON yang sudah dibaca akan digunakan oleh aplikasi android itu kedepannya.
+
+![Diagram puppeteer melakukan web scraping](./assets/image/diagram-Aplikasi%20Android%20Membaca%20Kartu%20Digital.drawio.png)
+
 ## Bagaimana Siswa Mendapatkan Kartu Saat Ini?
 
 <br />
 
-![Website yang diakses saat ini jika ingin mendapatkan kartu ulangan](./assets/bagaimana-siswa-mendapatkan-kartu-saat-ini.png)
+![Website yang diakses saat ini jika ingin mendapatkan kartu ulangan](./assets/image/bagaimana-siswa-mendapatkan-kartu-saat-ini.png)
 
 Sebelum masuk ke konsep utama, saya sebagai siswa mendapatkan kartu dengan memasukan U-PIN yang diberikan dengan cara verifikasi melalui Whatsapp. Pesan yang ada di Whatsapp akan mengarahkan siswa ke website https://kartuujian.sman12-bekasi.sch.id/ dan mengisikan U-PIN yang tertera.
 
 Setelah tombol `Login` ditekan, akan diarahkan ke halaman kartu yang sebenarnya. Kira-kira tampilannya akan jadi seperti ini.
 
-![Setelah siswa mengisi U-PIN](./assets/setelah-mengisi-u-pin.png)
+![Setelah siswa mengisi U-PIN](./assets/image/setelah-mengisi-u-pin.png)
 
 ### Analisis
 
@@ -26,11 +46,11 @@ Ini adalah bagian analisis yang akan memberikan penjelasan bagaimana halaman web
 
 Saya melakukan _inspect element_ ke tombol `Cetak` yang ada, dan ternyata yang dilakukan adalah menjalankan `window.print()` setelah tombol di tekan. Setelahnya akan dimunculkan _popup_ atau _dialogue_ yang menginformasikan ke pengguna untuk menyimpan atau langsung mengeprintnya.
 
-![Tombol cetak](./assets/halaman-kartu.png)
+![Tombol cetak](./assets/image/halaman-kartu.png)
 
 Jika diperhatikan, tombol `Cetak` hilang jika sudah di print/didownload dikarenakan ada class `.no-print` yang cssnya tidak menampilkan pada saat `media print` yang artinya dalam mode printing.
 
-![Setelah siswa mengisi U-PIN](./assets/css-media-print-tombol-hilang.png)
+![Setelah siswa mengisi U-PIN](./assets/image/css-media-print-tombol-hilang.png)
 
 #### Bagaimana Kartu Bisa Terender di Web
 
@@ -50,7 +70,7 @@ Cara yang paling mudah adalah menggunakan teknik [_scraping_](https://www.niagah
 
 Yang pertama kali saya lakukan adalah mengambil elemen yang merupakan nomor dari kumpulan hari yang ada. Hal ini diambil karena elemen ini memiliki karakteristik khusus yaitu mengisi 4 baris sekaligus (4 rowspan).
 
-![Elemen nomor table data (td)](./assets/jadwalRef-element.png)
+![Elemen nomor table data (td)](./assets/image/jadwalRef-element.png)
 
 Jadi, elemen ini bisa ditampung ke dalam variabel `jadwalRef`.
 
@@ -135,7 +155,7 @@ const jadwal = jadwalRef.map((j) => {
 
 ### Mendapatkan Identitas Siswa/i
 
-![Identitas siswa/i yang bisa diambil](./assets/identitas-siswa.png)
+![Identitas siswa/i yang bisa diambil](./assets/image/identitas-siswa.png)
 
 Bagian ini merupakan tabel yang memiliki 800px dan tabel kedua yang ada di jenisnya (`'table[width="800"]:nth-of-type(2)'`). Semua text yang ada dicetak tebal menggunakan tag `b`, jadi bisa di simpulkan bahwa elemen bisa diambil menggunakan `querySelectorAll` dengan parameter `'table[width="800"]:nth-of-type(2) td b'`.
 
