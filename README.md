@@ -342,7 +342,7 @@ const str = asciiString.substring(asciiString.indexOf("%%EOF") + 5);
 const message = str.trim();
 ```
 
-Jalankan perintah dibawah ini untuk membaca file yang sudah ada di folder result folder ekstraksi data. Di folder [02-membaca-kartu](./002-membaca-kartu/) juga terdapat contoh pembacaan informasi rahasia dengan menggunakan bahasa JavaScript.
+Jalankan perintah dibawah ini untuk membaca file yang sudah ada di folder result folder ekstraksi data. Di folder [`02-membaca-kartu`](./002-membaca-kartu/) juga terdapat contoh pembacaan informasi rahasia dengan menggunakan bahasa JavaScript.
 
 ```sh
 npm run read
@@ -351,6 +351,8 @@ npm run read
 
 pnpm read
 ```
+
+Untuk contoh file java juga terdapat di [`02-membaca-kartu/ContohMembacaFile.java`](./002-membaca-kartu/ContohMembacaFile.java) jika ingin mendapatkan gambaran bagaimana caranya mendapatkan data kartu digital di Java.
 
 ## Menambahkan Fungsi Signature dan Verifikasi GnuPG (Opsional)
 
