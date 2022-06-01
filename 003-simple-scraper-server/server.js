@@ -8,7 +8,7 @@ const app = express();
     concurrency: Cluster.CONCURRENCY_CONTEXT,
     maxConcurrency: 2,
   });
-  await scraperCluster.task(async ({ page, data: { uPIN } }) => {
+  scraperCluster.task(async ({ page, data: { uPIN } }) => {
     await page.goto(
       `https://kartuujian.sman12-bekasi.sch.id/cetakskl.php?nisn=${uPIN}`,
       {
@@ -97,9 +97,9 @@ const app = express();
   });
 
   app.get("/", (req, res) =>
-    res.send(`Untuk mendapatkan file pdf, kunjungi /kartu-digital/<U-PIN>
-    
-    Jika ingin mendapatkan kartu dalam bentuk json, kunjungi /json/<U-PIN>`)
+    res.send(`Untuk mendapatkan file pdf, kunjungi /kartu-digital/&lt;U-PIN&gt; (tanpa tanda &lt; dan &gt;)
+    <br /><br />
+    Jika ingin mendapatkan kartu dalam bentuk json, kunjungi /json/&lt;U-PIN&gt; (tanpa tanda &lt; dan &gt;)`)
   );
 
   app.get("/kartu-digital/:upin", async function (req, res) {
