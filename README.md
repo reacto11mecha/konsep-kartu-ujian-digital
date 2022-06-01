@@ -281,7 +281,7 @@ type jadwalType = {
 
 export type IDigitalCard = {
   user: UserType;
-  jadwal: jadwalType;
+  jadwal: jadwalType[];
 };
 ```
 
