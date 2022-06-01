@@ -6,6 +6,12 @@ Sebelumnya, saya berterima kasih kepada pihak sekolah yang sudah bergerak dengan
 
 Dalam kata lain, saya memberikan saran supaya kita lebih _paperless_ dalam melaksanakan ujian.
 
+## Kenapa Ada Konsep Ini Sebelumnya?
+
+Alasan pertama, karena ini merupakan sebuah aplikasi android yang notabene bisa mengakses file android dengan leluasa (yang terbatas ketika menggunakan web), alangkah baiknya proses mengetikan identitas siswa dan token dapat dipersingkat.
+
+Alasan kedua, mungkin ini karena kurang teliti, ada siswi kelas 11 yang seharusnya mengerjakan soal kelas 11 malah mengerjakan soal kelas 10 karena tidak sadar telah memasukan kode yang pelajarannya mirip dengan kelas 10. Ya, memang keteledoran dia tetapi ini seharusnya bisa di minimalisir dengan kode yang sudah ditanam langsung ke kartu yang dibaca aplikasi.
+
 ## TL;DR
 
 _Too Long; Didn't Read_. Jika tidak ingin membaca terlalu panjang, ini adalah ringkasan penjelasan dengan menggunakan diagram.
@@ -363,3 +369,129 @@ gpg --verify <file_signaturenya> <file_aslinya>
 ```
 
 Cara diatas merupakan cara manual, terdapat banyak wraper yang sudah ada untuk menangani gpg di banyak bahasa pemrograman. Seperti [Bounty Castle](https://www.bouncycastle.org/) dalam bahasa pemrograman Java dan [OpenPGP.js](https://github.com/openpgpjs/openpgpjs) di bahasa pemrograman JavaScript.
+
+## Membuat Scraper Mudah di Akses
+
+Kita bisa menggunakan `puppeteer-cluster` untuk mempermudah mengambil data dalam jumlah yang banyak dan dapat diproses menjadi kartu digital secara langsung. Library ini dapat dikombinasikan dengan `express` sebagai web server. Dibawah ini merupakan snippet penggunannya tanpa web server.
+
+```js
+const { Cluster } = require("puppeteer-cluster");
+
+(async () => {
+  const scraperCluster = await Cluster.launch({
+    concurrency: Cluster.CONCURRENCY_CONTEXT,
+    maxConcurrency: 2,
+  });
+  scraperCluster.task(async ({ page, data: { uPIN } }) => {
+    await page.goto(
+      `https://kartuujian.sman12-bekasi.sch.id/cetakskl.php?nisn=${uPIN}`,
+      {
+        waitUntil: "networkidle2",
+      }
+    );
+
+    const table = await page.$$("table");
+    if (table.length < 1)
+      throw new Error(`Tidak ada kartu dengan U-PIN: ${uPIN}`);
+
+    await page.emulateMediaType("print");
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      scale: 0.85,
+    });
+
+    const dataKartuDigital = await page.evaluate(() => {
+      const jadwalRef = [...document.querySelectorAll('td[rowspan="4"]')];
+      const [nama, kelas, nomorPeserta, npsn, username, password] = [
+        ...document.querySelectorAll('table[width="800"]:nth-of-type(2) td b'),
+      ]
+        .filter((el) => el.parentElement.getAttribute("colspan") === "2")
+        .map((el) => el.innerText.trim());
+
+      const jadwal = jadwalRef.map((j) => {
+        let data = [];
+        let currentElement;
+
+        const parent = j.parentElement;
+
+        while (true) {
+          const next =
+            data.length < 1
+              ? parent.nextElementSibling
+              : currentElement.nextElementSibling;
+
+          if (!next || next.querySelector('td[rowspan="4"]')) break;
+
+          if (!next.querySelector("td").innerText.includes("-")) {
+            const mapelElement = next.querySelector("td");
+            const tokenElement = next.querySelector("td:nth-child(2)");
+            const waktuElement = next.querySelector("td:nth-child(3)");
+
+            const pelajaran = mapelElement.innerText.replace(/[0-9].\s/, "");
+            const tokenStr = tokenElement.innerText;
+            const token = tokenStr.includes("/")
+              ? tokenStr.split(" / ")
+              : [tokenStr];
+            const waktu = waktuElement.innerText.replace("–", "-");
+
+            data.push({
+              pelajaran,
+              token,
+              waktu,
+            });
+          }
+
+          currentElement = next;
+        }
+
+        const hariElement = parent.querySelector("th");
+        const [hari, tanggal] = hariElement.innerText.split(", ");
+
+        return {
+          hari,
+          tanggal,
+          mapel: data,
+        };
+      });
+
+      return {
+        user: {
+          nama,
+          kelas,
+          nomor_peserta: nomorPeserta,
+          npsn,
+          username,
+          password,
+        },
+        jadwal,
+      };
+    });
+
+    return { json: dataKartuDigital, buffer: pdfBuffer };
+  });
+
+  // Cara pemakaian
+  try {
+    // Mengeksekusi scraper dengan U-PIN yang diberikan
+    const digitalCard = await scraperCluster.execute({
+      uPIN: req.params.upin,
+    });
+
+    console.log(digitalCard); // akan mengembalikan { json, buffer }
+  } catch (err) {
+    console.error(err.message);
+  }
+})();
+```
+
+Contoh server yang terdapat scraper ada di folder [003-simple-scraper-server/](./003-simple-scraper-server/) yang terdapat file [`server.js`](/003-simple-scraper-server/server.js). File tersebut bisa dijalankan menggunakan perintah
+
+```sh
+npm start
+
+# atau
+
+pnpm start
+```
+
+Kunjungi http://localhost:3000/ untuk melihat petunjuk penggunaan, karena sewaktu-waktu path dapat berubah.
