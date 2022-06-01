@@ -5,7 +5,7 @@ import java.io.*;
 class ContohMembacaFile {
   public static void main(String[] args) throws Exception {
     try {
-      BufferedReader br = new BufferedReader(new FileReader("/home/runner/PDFReadingJava/20231718_EZRA KHAIRAN PERMANA_2122-10-372.pdf"));
+      BufferedReader br = new BufferedReader(new FileReader("/path/ke/file.pdf"));
 
       StringBuilder sb = new StringBuilder();
       String line = br.readLine();
