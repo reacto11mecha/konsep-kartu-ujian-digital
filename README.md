@@ -356,7 +356,7 @@ Untuk contoh file java juga terdapat di [`02-membaca-kartu/ContohMembacaFile.jav
 
 ## Menambahkan Fungsi Signature dan Verifikasi GnuPG (Opsional)
 
-Jika ingin benar-benar memastikan kartu itu dibuat oleh pihak sekolah, kartu harus memiliki tanda tangan elektronik menggunakan GnuPG (Gnu Privacy Guard) sebagai software penjamin dan bisa diverifikasi dalam aplikasi.
+Jika ingin benar-benar memastikan kartu itu dibuat oleh pihak sekolah, kartu harus memiliki tanda tangan elektronik menggunakan GnuPG (Gnu Privacy Guard) sebagai software penjamin dan bisa diverifikasi dalam aplikasi. Hal ini mengurangi kompleksitas aplikasi yang harus memvalidasi data json yang telah dimasukkan ke dalam file pdf.
 
 Untuk menandatangani file
 
