@@ -59,7 +59,7 @@ if (!fs.existsSync(resultDir)) fs.mkdirSync(resultDir);
   console.log("> Mengekstrak data dari halaman kartu...");
   const dataKartuDigital = await page.evaluate(() => {
     const jadwalRef = [...document.querySelectorAll('td[rowspan="4"]')];
-    const [nama, kelas, nomorPeserta, npsn, username, password] = [
+    const [nama, kelas, nomorPeserta, npsn, kodeServer, username, password] = [
       ...document.querySelectorAll('table[width="800"]:nth-of-type(2) td b'),
     ]
       .filter((el) => el.parentElement.getAttribute("colspan") === "2")
@@ -117,6 +117,7 @@ if (!fs.existsSync(resultDir)) fs.mkdirSync(resultDir);
         kelas,
         nomor_peserta: nomorPeserta,
         npsn,
+        kodeServer,
         username,
         password,
       },
