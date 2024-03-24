@@ -1,3 +1,7 @@
+Repositori ini di arsipkan karena sudah ada sistem yang baru yaitu [enpitsu](https://github.com/reacto11mecha/enpitsu) yang mempermudah proses login dengan hanya satu token juga mempermudah proses koreksi dan export nilai.
+
+---
+
 # Konsep Kartu Ujian Digital
 
 Ini adalah penjelasan atas konsep kartu ujian digital yang dapat memudahkan siswa tanpa perlu repot memasukkan NPSN (Nomor Pokok Sekolah Nasional), Username, dan Password. Nantinya jadwal dan token dapat langsung digunakan tanpa perlu mengetikkannya, tetapi tidak akan menggantikan input secara manual ketika token memiliki kesalahan.
